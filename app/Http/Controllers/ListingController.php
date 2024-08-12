@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Listing;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+
+
 
 class ListingController extends Controller
 {
@@ -44,9 +47,13 @@ if($request->hasFile('logo'))
 $formFields['logo'] = $request->file('logo')->store('logos','public');
 }
 
-    Listing::create($formFields);
-    return redirect('/')->with('message', 'Listing created successfully');
+ // To know which user created the listing
+ $formFields['user_id'] = Auth::id();
 
+
+ Listing::create($formFields);
+
+ return redirect('/')->with('message', 'Listing created successfully');
 }
 //show edit form
 
@@ -58,6 +65,10 @@ return view('listings.edit', ['listing' => $listing]);
 //update
 public function update(Request $request, Listing $listing)
 {
+   // Authorization
+   if ($listing->user_id != Auth::id()) {
+    abort(403, 'Unauthorized Action');
+}
     $formFields = $request->validate([
        'title' => 'required',
        'company' => ['required'],
@@ -80,8 +91,19 @@ $formFields['logo'] = $request->file('logo')->store('logos','public');
 
 public function destroy(Listing $listing)
 {
+    // Authorization
+   if ($listing->user_id != Auth::id()) {
+    abort(403, 'Unauthorized Action');
+}
 $listing->delete();
 return redirect('/')->with('message', 'Listing deleted successfully');
+}
+
+public function manage()
+{
+    return view('listings.manage', [
+        'listings' => \App\Models\User::find(Auth::id())->listings()->get()
+    ]);
 }
 
 }
