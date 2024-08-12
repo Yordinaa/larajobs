@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ListingController;
+use Illuminate\Auth\Events\Logout;
 
 //common resource routes
 //index
@@ -46,3 +47,12 @@ Route::get('/register', [UserController::class, 'create']
 //create a new user
 
 Route::post('/users', [UserController::class,'store']);
+//logout
+Route::post
+('/logout', [UserController::class, 'logout']);
+
+//login form
+Route::get('/login',[UserController::class, 'login']);
+//login users
+
+Route::post('/users/authenticate', [UserController::class,'authenticate']);
